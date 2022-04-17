@@ -6,11 +6,13 @@ from typing import Union, Dict
 
 
 class SegMetrics(object):
-    def __init__(self, 
-                 pred: Union[np.ndarray, str], 
-                 label: Union[np.ndarray, str],
-                 num_classes: int) -> None:
-        """ Metrics about segmentation
+    def __init__(
+        self,
+        pred: Union[np.ndarray, str],
+        label: Union[np.ndarray, str],
+        num_classes: int,
+    ) -> None:
+        """Metrics about segmentation
 
         Args:
             pred (Union[np.ndarray, str]): The output's ndarray or path.
@@ -19,7 +21,8 @@ class SegMetrics(object):
         """
         if num_classes <= 0:
             raise ValueError(
-                "The `num_classes` must greater than 0, not be {}.".format(num_classes))
+                "The `num_classes` must greater than 0, not be {}.".format(num_classes)
+            )
         self.num_classes = num_classes
         self._pred = self._init_img(pred)
         self._label = self._init_img(label)
@@ -71,32 +74,38 @@ class SegMetrics(object):
         return self._draw_img(self._label)
 
     def calc_confusion_matrix(self) -> np.ndarray:
-        """ ConfusionMatrix
-            P\L    P      N
-            P      TP     FP
-            N      FN     TN
-        """ 
+        """ConfusionMatrix
+        P\L    P      N
+        P      TP     FP
+        N      FN     TN
+        """
         label_f = self._label.flatten()
         pred_f = self._pred.flatten()
         mask = (label_f >= 0) & (label_f < self.num_classes)
         label = self.num_classes * label_f[mask] + pred_f[mask]
-        count = np.bincount(label, minlength=self.num_classes ** 2)
+        count = np.bincount(label, minlength=self.num_classes**2)
         confusion_matrix = count.reshape(self.num_classes, self.num_classes)
         return confusion_matrix
 
     @property
-    def OA(self) -> float:  
-        oa = np.diag(self.ConfusionMatrix).sum() / (self.ConfusionMatrix.sum() + self.eps) 
+    def OA(self) -> float:
+        oa = np.diag(self.ConfusionMatrix).sum() / (
+            self.ConfusionMatrix.sum() + self.eps
+        )
         return oa
-    
+
     @property
-    def Precision(self) -> np.ndarray:   
-        precision = np.diag(self.ConfusionMatrix) / (self.ConfusionMatrix.sum(axis=0) + self.eps)
+    def Precision(self) -> np.ndarray:
+        precision = np.diag(self.ConfusionMatrix) / (
+            self.ConfusionMatrix.sum(axis=0) + self.eps
+        )
         return precision
 
     @property
     def Recall(self) -> np.ndarray:
-        recall = np.diag(self.ConfusionMatrix) / (self.ConfusionMatrix.sum(axis=1) + self.eps)
+        recall = np.diag(self.ConfusionMatrix) / (
+            self.ConfusionMatrix.sum(axis=1) + self.eps
+        )
         return recall
 
     @property
@@ -108,36 +117,41 @@ class SegMetrics(object):
     def MissingAlarm(self) -> np.ndarray:
         missing_alarm = np.ones_like(self.Recall) - self.Recall
         return missing_alarm
-    
+
     @property
     def F1(self) -> np.ndarray:
-        f1 = 2 * self.Precision * self.Recall / (self.Precision + self.Recall + self.eps)
+        f1 = (
+            2 * self.Precision * self.Recall / (self.Precision + self.Recall + self.eps)
+        )
         return f1
 
     @property
     def _intersection(self) -> np.ndarray:
-        return np.diag(self.ConfusionMatrix) 
+        return np.diag(self.ConfusionMatrix)
 
     def _union(self, sub_diag: bool = True) -> np.ndarray:
-        union = np.sum(self.ConfusionMatrix, axis=1) + \
-                np.sum(self.ConfusionMatrix, axis=0)
+        union = np.sum(self.ConfusionMatrix, axis=1) + np.sum(
+            self.ConfusionMatrix, axis=0
+        )
         if sub_diag:
             union -= np.diag(self.ConfusionMatrix)
         return union
 
     @property
-    def IoU(self) -> np.ndarray: 
+    def IoU(self) -> np.ndarray:
         iou = self._intersection / (self._union() + self.eps)
         return iou
 
     @property
-    def mIoU(self) -> float:  
+    def mIoU(self) -> float:
         miou = np.nanmean(self.IoU)
         return miou
 
     @property
     def FWIoU(self) -> float:
-        freq = np.sum(self.ConfusionMatrix, axis=1) / (np.sum(self.ConfusionMatrix) + self.eps) 
+        freq = np.sum(self.ConfusionMatrix, axis=1) / (
+            np.sum(self.ConfusionMatrix) + self.eps
+        )
         iu = np.diag(self.ConfusionMatrix) / (self._union() + self.eps)
         fwiou = (freq[freq > 0] * iu[freq > 0]).sum()
         return fwiou
@@ -148,7 +162,7 @@ class SegMetrics(object):
         return dice
 
     @property
-    def mDice(self) -> float:  
+    def mDice(self) -> float:
         mdice = np.nanmean(self.Dice)
         return mdice
 
@@ -157,7 +171,7 @@ class SegMetrics(object):
         pe_rows = np.sum(self.ConfusionMatrix, axis=0)
         pe_cols = np.sum(self.ConfusionMatrix, axis=1)
         sum_total = sum(pe_cols)
-        pe = np.dot(pe_rows, pe_cols) / (float(sum_total ** 2) + self.eps)
+        pe = np.dot(pe_rows, pe_cols) / (float(sum_total**2) + self.eps)
         po = np.trace(self.ConfusionMatrix) / (float(sum_total) + self.eps)
         kappa = (po - pe) / (1 - pe + self.eps)
         return kappa
@@ -177,5 +191,5 @@ class SegMetrics(object):
             "FWIoU": self.FWIoU,
             "Dice": self.Dice,
             "mDice": self.mDice,
-            "Kappa": self.Kappa
+            "Kappa": self.Kappa,
         }
