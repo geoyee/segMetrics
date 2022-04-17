@@ -2,7 +2,7 @@
 Metrics about segmentation based on Ptyhon.
 
 ```python
-from segmetrics import SampleMetrics
+from ssegmetrics import SampleMetrics
 
 pred = "datas/pred.png"
 label = "datas/label.png"

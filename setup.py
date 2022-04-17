@@ -8,7 +8,7 @@ with open("requirements.txt") as fin:
     REQUIRED_PACKAGES = fin.read()
 
 setuptools.setup(
-    name="segmetrics",
+    name="ssegmetrics",
     version="0.1.0",
     author="geoyee",
     author_email="geoyee@yeah.net",
