@@ -1,6 +1,12 @@
 # segMetrics
 Metrics about segmentation based on Ptyhon.
 
+## Install
+```
+pip install ssegmetrics
+```
+
+## Use
 ```python
 from ssegmetrics import SampleMetrics
 
