@@ -2,7 +2,7 @@
 Metrics about segmentation based on Ptyhon.
 
 ## Install
-```
+``` sehll
 pip install ssegmetrics
 ```
 
